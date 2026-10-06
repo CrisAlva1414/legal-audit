@@ -178,6 +178,30 @@ class DetectorFixtureTests(unittest.TestCase):
     def test_security_config_negative(self):
         self.assertEqual(self._neg("security_config"), [])
 
+    def test_security_config_no_headers_no_exception(self):
+        """Regresión BUG-scope: un repo con entradas HTTP candidatas pero sin
+        cabeceras de seguridad no debe lanzar NameError (comprehension en
+        Python 3 no expone `h` fuera de su scope). Debe emitir el hecho de
+        ausencia mapeado a gdpr-art-25 con techo PARTIAL. Fallaba con el bug.
+        """
+        root = FIXTURES / "security_config" / "no_headers"
+        findings = _scan("security_config", root)  # no debe lanzar
+        self.assertTrue(findings, "esperaba hallazgo de cabeceras ausentes")
+        ausencia = [h for h in findings if "cabecera de seguridad" in h.mensaje]
+        self.assertTrue(
+            ausencia,
+            f"falta el hecho de ausencia de cabeceras; hallazgos={findings!r}",
+        )
+        for h in ausencia:
+            self.assertEqual(
+                h.obligacion_id, "gdpr-art-25",
+                "la ausencia de cabeceras por defecto mapea a Art. 25(2)",
+            )
+            self.assertEqual(
+                h.techo_de_veredicto, "PARTIAL",
+                "Art. 25(2) es JUICIO → techo PARTIAL, nunca SATISFIED",
+            )
+
     # --- minors_and_voice -------------------------------------------------
     def test_minors_and_voice_positive(self):
         findings = self._pos("minors_and_voice")
