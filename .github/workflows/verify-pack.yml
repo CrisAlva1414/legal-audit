@@ -1,0 +1,100 @@
+name: verify-pack
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python 3.11+
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Correr el verificador del pack (los 6 checks)
+        run: python3 skills/legal-audit/scripts/verify_pack.py
+
+      # El CI NO confía en el hash publicado dentro del repo (T2): lo
+      # recalcula desde el árbol y falla si no coincide.
+      - name: Recalcular el hash del pack desde el árbol
+        id: pack-hash
+        run: |
+          python3 - <<'EOF'
+          import hashlib, re, sys
+          from pathlib import Path
+
+          REFS = Path("skills/legal-audit/references")
+          manifest = REFS / "sources" / "SOURCES.sha256"
+          if not manifest.is_file():
+              print("::error::Falta el manifiesto SOURCES.sha256")
+              sys.exit(1)
+
+          # Archivos listados en el manifiesto.
+          listed = []
+          for lineno, raw in enumerate(manifest.read_text().splitlines(), 1):
+              s = raw.strip()
+              if not s or s.startswith("#"):
+                  continue
+              m = re.match(r"^([0-9a-fA-F]{64})\s+\*?(.+?)\*?\s*$", s)
+              if not m:
+                  print(f"::error::manifiesto:{lineno}: formato inválido -> {raw!r}")
+                  sys.exit(1)
+              listed.append((m.group(1).lower(), m.group(2).strip()))
+
+          # Recalcula cada hash desde el árbol y deriva el hash del pack.
+          h = hashlib.sha256()
+          for expected, rel in listed:
+              target = (REFS / rel).resolve()
+              if not target.is_file():
+                  print(f"::error::archivo listado no existe: {rel}")
+                  sys.exit(1)
+              got = hashlib.sha256(target.read_bytes()).hexdigest()
+              if got != expected:
+                  print(f"::error::HASH {rel}: el árbol no coincide con el manifiesto "
+                        f"(esperado {expected}, obtenido {got})")
+                  sys.exit(1)
+              h.update(got.encode())
+          # Cubre activos en sources/ fuera del manifiesto.
+          listed_rel = {Path(r) for _, r in listed}
+          for p in sorted((REFS / "sources").rglob("*")):
+              if p.is_file() and p.name != "SOURCES.sha256":
+                  rel = p.relative_to(REFS)
+                  if rel not in listed_rel:
+                      print(f"::error::archivo en sources/ fuera del manifiesto: {rel}")
+                      sys.exit(1)
+          print(f"pack_files={len(listed)}")
+          print(f"pack_hash={h.hexdigest()}")
+          EOF
+        env:
+          PYTHONIOENCODING: utf-8
+
+      - name: Comparar contra el hash publicado en la última release
+        run: |
+          pack_hash="${{ steps.pack-hash.outputs.pack_hash }}"
+          echo "Hash del árbol: ${pack_hash}"
+
+          release_hash=""
+          if gh release view latest --json tagName --jq .tagName >/dev/null 2>&1; then
+            release_hash="$(gh release view latest --json body --jq .body \
+              | grep -oE '[0-9a-f]{64}' | tail -1 || true)"
+          fi
+
+          if [ -z "$release_hash" ]; then
+            echo "::warning::No hay release publicada todavía — no se puede contrastar el ancla externa. Publicar la primera release con el pack_hash en el body activa el control."
+            exit 0
+          fi
+
+          echo "Hash publicado en la última release: ${release_hash}"
+          if [ "$pack_hash" != "$release_hash" ]; then
+            echo "::error::El árbol del pack no coincide con el hash publicado en la última release. Alguien reescribió el manifiesto sin publicar release nueva."
+            exit 1
+          fi
+          echo "OK: el árbol del pack coincide con el ancla externa de la última release."
