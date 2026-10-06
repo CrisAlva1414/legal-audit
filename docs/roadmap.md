@@ -32,3 +32,28 @@
   fricción de firma en cada contribución.
 - **Crosswalk ISO/IEC 27701 ↔ Ley 21.719.** No existe un crosswalk oficial;
   construirlo requeriría trabajo normativo que excede este proyecto.
+
+## Trabajo futuro — detectores de vendors (S6)
+
+La tabla de proveedores en
+`skills/legal-audit/references/sources/vendors.md` (captura 2026-10-05) es un
+**look-up estático**: documenta qué se verificó a esa fecha, no qué es verdad
+hoy. Hay que **re-verificarla** con `source-verifier` antes de cada uso (los
+DPAs, listas de sub-procesadores y estados DPF mutan en meses). Detectores a
+construir en S6 e integrar vía `obligations.json` (no se tocan en este slice):
+
+- [ ] **Detector de transferencia sin base.** Proveedor fuera de la lista de
+      adecuación o sin DPF activo → requiere SCCs + TIA.
+- [ ] **Detector de DPA.** DPA ausente o no firmado (p. ej. Cohere solo NDA;
+      DeepSeek sin DPA público).
+- [ ] **Detector de sub-procesadores.** La cadena visible revela eslabones no
+      contratados (Cloudflare AI Gateway, Datadog/Sentry, Azure "operated
+      models", Bedrock `provider_data_share`).
+- [ ] **Detector de región.** Región declarada en config vs regiones en que el
+      proveedor puede procesar (Azure Global/DataZone, "Global inference" de
+      Alibaba).
+- [ ] **Detector de no-training.** Flag de training/fine-tuning habilitado en
+      config → el proveedor deja de ser encargado para esa finalidad.
+- [ ] **Re-verificación del look-up.** El inventario no es evidencia de que un
+      contrato exista hoy; cada reporte declara el hash del pack usado
+      (`SOURCES.sha256`).

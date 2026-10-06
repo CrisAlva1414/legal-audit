@@ -1,0 +1,59 @@
+legal-audit
+===========
+
+Este producto referencia material de terceros. Cada componente se usa con la
+licencia indicada. En esta etapa NO se incluye código derivado de componentes
+copyleft.
+
+Fuentes legales y doctrinales (referencia textual, sin obra derivada)
+----------------------------------------------------------------------
+
+1. Reglamento (UE) 2016/679 (GDPR) — texto oficial.
+   Fuente: EUR-Lex, CELEX 32016R0679
+   https://eur-lex.europa.eu/legal-content/ES/TXT/?uri=CELEX:32016R0679
+   Licencia: texto oficial de la UE; reutilización permitida con atribución
+   (Decisión 2011/833/UE). Uso: cita textual en el pack de evidencia.
+
+2. Ley 21.719 (Chile) — texto oficial.
+   Fuente: Biblioteca del Congreso Nacional (BCN), idNorma 1209272
+   https://www.bcn.cl/leychile/navegar?idNorma=1209272
+   Licencia: texto oficial; BCN permite su uso con atribución.
+   Uso: cita textual en el pack de evidencia.
+
+3. WP29 Opinion 05/2014 (WP216) sobre técnicas de anonimización.
+   Licencia: documento de trabajo de la UE; reutilización permitida con
+   atribución. Uso: fundamento doctrinal del análisis de anonimato.
+
+4. EDPB Guidelines 01/2025 (pseudonimización).
+   Fuente: edpb.europa.eu [PENDIENTE URL exacta].
+   Licencia: EUPL / dominio público de la UE. Uso: doctrina de
+   pseudonimización.
+
+5. EDPB Guidelines 02/2026 (anonimización; borrador en consulta pública
+   hasta 2026-10-30).
+   Fuente: edpb.europa.eu [PENDIENTE URL exacta].
+   Licencia: EUPL / dominio público de la UE. Uso: doctrina de anonimización
+   (borrador sujeto a cambios).
+
+6. CJEU C-413/23 P EDPS v SRB (1.ª Sala, 2025-09-04).
+   Fuente: curia.europa.eu [PENDIENTE URL exacta].
+   Licencia: documentos judiciales de la UE; reutilización permitida con
+   atribución. Uso: caso de pseudonimización dependiente del receptor.
+
+7. CJEU C-582/14 Patrick Breyer.
+   Fuente: curia.europa.eu [PENDIENTE URL exacta].
+   Licencia: ídem. Uso: criterio de identificabilidad por medios razonables.
+
+8. CJEU C-131/12 Google Spain.
+   Fuente: curia.europa.eu [PENDIENTE URL exacta].
+   Licencia: ídem. Uso: alcance de "responsable del tratamiento" y de dato
+   personal.
+
+Prior art (solo referencia; sin código derivado en esta etapa)
+--------------------------------------------------------------
+
+9. Privado — https://github.com/Privado-Inc/privado
+   Licencia: LGPL-3.0. Uso: referencia de arquitectura de data-flow y de
+   enfoque de prior art. NO se incluye ni enlaza código derivado. Si en el
+   futuro se incorporara código LGPL-3.0, se hará con aviso y cumplimiento
+   de la licencia correspondiente.

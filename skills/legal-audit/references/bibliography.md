@@ -17,6 +17,7 @@ primario no accedido) · `BORRADOR` (documento en consulta, no derecho vigente)
 - [Jurisprudencia](#bib-jurisprudencia)
 - [Guías de autoridad](#bib-guias)
 - [Estándares](#bib-estandares)
+- [Fuentes de terceros (vendors)](#bib-vendors)
 - [Prior art](#bib-prior)
 - [Fuentes fuera de alcance](#bib-fuera-alcance)
 
@@ -63,6 +64,33 @@ primario no accedido) · `BORRADOR` (documento en consulta, no derecho vigente)
 | Fuente | Qué se usa | Dónde aparece | Estado |
 |---|---|---|---|
 | **ISO/IEC 27701:2025 Ed.2** — Anexo D informativo | Crosswalk a GDPR Arts. 5–35 y 44–49 (excluye 36–43). | `sources/chile-eu-crosswalk.md` | `INDIRECTA` — texto de pago, no accedido |
+
+<a id="bib-vendors"></a>
+## Fuentes de terceros (vendors)
+
+Registro de las fuentes externas del inventario de proveedores
+(`sources/vendors.md`): policies, DPAs y listas de sub-procesadores oficiales.
+Captura **2026-10-05**; son fuentes que **mutan en meses** y el
+`source-verifier` debe re-consultarlas antes de cada uso. Ninguna se cita como
+texto normativo capturado: se referencian como **inventario externo** (ver
+`doctrine.md`, jerarquía de evidencia — rango 4/5, análisis de tercero
+reputado; y `sources/vendors.md`, cabecera de vigencia).
+
+| Fuente (URL oficial) | Qué se usa | Estado |
+|---|---|---|
+| Cloudflare — lista de sub-procesadores (`cloudflare.com/cloudflare_subprocessors/`) | Cadena AI Gateway → Anthropic/OpenAI/xAI/Groq/CoreWeave | VERIFICADO (captura 2026-10-05; re-consultar URL) |
+| Datadog — lista de sub-procesadores (`datadoghq.com/legal/subprocessors/`) | Anthropic/OpenAI en servicios AI/ML | VERIFICADO |
+| Sentry — DPA (`sentry.io/legal/dpa/`) | Anthropic/OpenAI como sub-procesadores | VERIFICADO |
+| Microsoft DPA (`microsoft.com/licensing/docs/view/Microsoft-Products-and-Services-Data-Protection-Addendum-DPA`) | Azure "OpenAI operated models": OpenAI como sub-procesador | VERIFICADO (URL del anexo: A VERIFICAR) |
+| AWS Bedrock — documentación de `provider_data_share` | Flag que decide transferencia a Anthropic; retención 30 días | VERIFICADO (URL exacta: A VERIFICAR) |
+| AssemblyAI — legal (`assemblyai.com/legal`) | LLM Gateway vía Bedrock con ZDR | VERIFICADO (URL exacta: A VERIFICAR) |
+| Comisión Europea — lista de adecuación (Art. 45) | Mapa 2026 de países adecuados | VERIFICADO |
+| DPF — registro oficial (EEUU) | Membresía activa y cobertura por empresa | VERIFICADO (verificado 4-oct-2026) |
+| Diario Oficial Chile — cláusulas contractuales modelo (19-dic-2025) | Vía de salvaguarda Chile para transferencias | VERIFICADO |
+| Garante italiano — provvedimento 10098477 (30-ene-2025) | Bloqueo de DeepSeek | VERIFICADO |
+
+**Categorías de proveedor cubiertas por `sources/vendors.md`:**
+`llm` · `stt` · `idp` · `infra` · `observabilidad` · `pagos` · `chino`
 
 <a id="bib-prior"></a>
 ## Prior art

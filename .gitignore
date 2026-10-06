@@ -1,0 +1,16 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Node
+node_modules/
+
+# Reportes generados por el usuario (no son del repo)
+*.output.md
+
+# Backups
+*.bak
