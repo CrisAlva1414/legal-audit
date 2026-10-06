@@ -1,0 +1,40 @@
+// opencode.json.snippet — registro de legal-audit para OpenCode.
+//
+// OpenCode descubre skills y subagentes por convención de directorio; este
+// archivo NO es obligatorio para que legal-audit funcione. Lo único que hace
+// es (1) dejar explícito dónde busca OpenCode y (2) opcionalmente ajustar
+// permisos de la skill. Copiá el bloque que necesites dentro de tu
+// `opencode.json` (`~/.config/opencode/opencode.json` para usuario global).
+//
+// Referencia: https://opencode.ai/docs/skills/ (descubrimiento por path) y
+// https://opencode.ai/docs/agents/ (cribado de subagentes).
+
+{
+  // Skills: OpenCode las busca en `~/.config/opencode/skills/<name>/SKILL.md`.
+  // No hay que "registrar" la carpeta: el symlink que crea install.md ya la deja
+  // visible. Este bloque solo controla QUIÉN puede cargar cada skill.
+  "permission": {
+    "skill": {
+      // "*": "allow",            // carga inmediata (default en la práctica)
+      "legal-audit": "allow"      // nombrarla explícitamente no hace daño
+      // "legal-audit": "ask"     // pedir aprobación antes de cargarla
+    }
+  },
+
+  // Opcional — scripts de la skill en el PATH del agente. Solo si querés que
+  // `scan.py` / `verify_pack.py` se llamen como comandos sueltos. La skill
+  // igualmente los referencia por ruta relativa a `skills/legal-audit/`, así
+  // que esto es una conveniencia, no un requisito.
+  // "experimental": {
+  //   "shellEnvironment": {
+  //     "PATH": [
+  //       "~/.config/opencode/skills/legal-audit/scripts",
+  //       "~/.config/opencode/skills/legal-audit/scripts/detectors"
+  //     ]
+  //   }
+  // }
+
+  // Subagentes: OpenCode los lee de `~/.config/opencode/agents/*.md`. No se
+  // declaran en opencode.json; basta con que el archivo exista con frontmatter
+  // `name` + `description`. Los 4 subagentes canónicos ya cumplen eso.
+}

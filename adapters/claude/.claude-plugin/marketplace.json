@@ -1,0 +1,15 @@
+{
+  "name": "legal-audit-marketplace",
+  "description": "Marketplace de legal-audit para Claude Code: provee los 4 subagentes orquestadores y la skill.",
+  "owner": {
+    "name": "legal-audit maintainers"
+  },
+  "plugins": [
+    {
+      "name": "legal-audit",
+      "source": ".",
+      "description": "Subagentes orquestados de legal-audit para Claude Code.",
+      "version": "0.1.0"
+    }
+  ]
+}

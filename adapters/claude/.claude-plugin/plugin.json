@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json.schemastore.org/claude-plugin.json",
+  "name": "legal-audit",
+  "displayName": "legal-audit",
+  "version": "0.1.0",
+  "description": "Subagentes orquestados de la skill legal-audit (auditoría estática GDPR + Ley 21.719) para Claude Code.",
+  "author": {
+    "name": "legal-audit maintainers"
+  },
+  "license": "Apache-2.0",
+  "keywords": ["gdpr", "chile", "ley-21719", "privacy", "audit"],
+  "agents": [
+    "./agents/source-verifier.md",
+    "./agents/legal-researcher.md",
+    "./agents/code-scout.md",
+    "./agents/obligation-auditor.md"
+  ],
+  "skills": ["./skills/"]
+}
