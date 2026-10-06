@@ -1,0 +1,27 @@
+# SOURCES.sha256 — integridad del pack de evidencia congelado (mitiga T2)
+#
+# Qué verifica: el contenido exacto (SHA-256) de las fuentes normativas, de
+# los archivos doctrinales/bibliográficos del pack, del verificador mismo
+# (`scripts/verify_pack.py`) y del manifiesto de la skill (`SKILL.md`).
+#
+# Quién lo usa: el subagente `source-verifier` (S5) recalcula estos hashes para
+# detectar toda modificación del pack antes de emitir un reporte. El reporte
+# debe declarar el hash del pack usado. El CI (`.github/workflows/verify-pack.yml`)
+# recalcula estos hashes y falla si no coinciden: no confía en el valor del repo.
+#
+# Regla crítica: el hash DETECTA un cambio, NO lo legitima. Toda modificación
+# del pack exige revisión humana explícita en el PR (ver CONTRIBUTING.md y
+# docs/threat-model.md, amenaza T2). Si un hash no coincide, la auditoría se
+# detiene hasta que una persona revise el cambio.
+#
+# Uso (desde skills/legal-audit/references/):
+#     sha256sum -c sources/SOURCES.sha256
+#
+f90a4154a2869a937880490ff9c7e0bde387343bebe779b4d5a53cc443197aab  sources/gdpr.md
+9090a4d70dc55f5b240e0f354e41f6804f46fd499aeeb39202fc334efe758b75  sources/eprivacy.md
+9f083bde6fec2aaf0a10af960b4a2e83b311e3fddf317b84738d978b06e46acb  sources/chile-21719.md
+13c7bd8aa84ae3c6fc7914d124cccaf720ba8e7cb0a21c5aefb58cf1b70f7e40  sources/chile-eu-crosswalk.md
+c8f0f9e9884a3e0183bb524f0fc9af8ed67321811049cfaca401a4bd211e61e7  doctrine.md
+ddf9e609d3ea24ca865c1e5d7b028df5f32556cb6c754207f7f7ca6e30664f54  bibliography.md
+f6126d8ec0cf1bb10cf120f76249b245728dec46773ac3ecb52b3629dc04a9f1  ../scripts/verify_pack.py
+ee076e83119ed661469eedea265ccec03c1ce26229672274add1462b4f0fdc79  ../SKILL.md
