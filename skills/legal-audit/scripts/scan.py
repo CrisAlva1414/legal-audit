@@ -157,11 +157,16 @@ def main(argv: list[str]) -> int:
     cobertura_por_detector: dict[str, list[str]] = {}
     metricas_por_detector: dict[str, dict[str, int]] = {}
     errores: list[str] = []
+    # Un detector caído es visible en el PRIMER nivel del resumen, no solo en
+    # la lista `errores`: `detectores_ejecutados` no puede leerse como
+    # "cubierto" cuando algún detector no produjo nada.
+    detectores_fallidos: list[str] = []
     for name in DETECTORS:
         try:
             mod = _load_detector(name)
         except Exception as exc:  # noqa: BLE001
             errores.append(f"{name}: no se pudo cargar: {exc}")
+            detectores_fallidos.append(name)
             continue
         cobertura_por_detector[name] = sorted(mod.COVERED_OBLIGACIONES)
         try:
@@ -170,9 +175,11 @@ def main(argv: list[str]) -> int:
             metricas_por_detector[name] = dict(common.STATS)
         except _DetectorTimeout:
             errores.append(f"timeout: {name}")
+            detectores_fallidos.append(name)
             continue
         except Exception as exc:  # noqa: BLE001
             errores.append(f"{name}: falló scan(): {exc}")
+            detectores_fallidos.append(name)
             continue
         for h in hallazgos_mod:
             hd = h.to_dict() if hasattr(h, "to_dict") else dict(h)
@@ -233,6 +240,8 @@ def main(argv: list[str]) -> int:
             "por_prioridad_revision": {s: por_prioridad.get(s, 0) for s in PRIORIDAD_ORDEN},
             "por_jurisdiccion": por_jurisdiccion,
             "detectores_ejecutados": len(cobertura_por_detector),
+            "detectores_total": len(DETECTORS),
+            "detectores_fallidos": detectores_fallidos,
             "errores_detectores": len(errores),
             "metricas_por_detector": metricas_por_detector,
         },
@@ -260,7 +269,8 @@ def main(argv: list[str]) -> int:
     # impresión humana a stdout
     print(f"repo auditado : {target}")
     print(f"pack          : {OBLIGACIONES_JSON}")
-    print(f"detectores    : {len(cobertura_por_detector)}/{len(DETECTORS)}")
+    print(f"detectores    : {len(cobertura_por_detector)}/{len(DETECTORS)}"
+          + (f"  FALLIDOS: {', '.join(detectores_fallidos)}" if detectores_fallidos else ""))
     print(f"hallazgos     : {len(hallazgos)}  "
           f"(ALTA={por_prioridad.get('ALTA', 0)} MEDIA={por_prioridad.get('MEDIA', 0)} "
           f"BAJA={por_prioridad.get('BAJA', 0)} INFO={por_prioridad.get('INFO', 0)})")

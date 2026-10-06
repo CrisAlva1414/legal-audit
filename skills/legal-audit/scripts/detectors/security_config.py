@@ -173,10 +173,12 @@ def scan(root: Path) -> list[Finding]:
         present = {h for h in _SEC_HEADERS if re.search(h, text, re.IGNORECASE)}
         absent = [h for h in _SEC_HEADERS if h not in present]
         if absent:
+            # BUG-scope: `h` de la comprehension de la línea anterior NO existe
+            # fuera de ella en Python 3; se usa `absent[0]` (no vacío por `if absent`).
             for ln, line in _first_http_entry(p, text):
                 add(
                     "gdpr-art-25", rel, ln, line,
-                    f"no se ha encontrado la cabecera de seguridad `{h}` en el candidato de "
+                    f"no se ha encontrado la cabecera de seguridad `{absent[0]}` en el candidato de "
                     f"entrada HTTP {rel}:{ln} (ausentes: {', '.join(absent)}); "
                     "hecho de configuración por defecto — la adecuación es juicio (Art. 25(2))",
                     sev="MEDIA", conf="baja",

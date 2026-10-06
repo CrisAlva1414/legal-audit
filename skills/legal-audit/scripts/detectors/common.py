@@ -83,7 +83,8 @@ MAX_FILE_BYTES = 2 * 1024 * 1024    # 2 MB por archivo
 MAX_LINE_CHARS = 10_000             # 10.000 chars por línea
 
 STATS = {
-    "simlinks_omitidos": 0,       # symlinks que resuelven fuera del root
+    "simlinks_omitidos": 0,       # symlinks (archivo y directorio) omitidos
+    "secretos_omitidos": 0,       # archivos-secreto excluidos por defecto (D11)
     "lineas_truncadas": 0,        # líneas cortadas por MAX_LINE_CHARS
     "archivos_truncados": 0,      # archivos cortados por MAX_FILE_BYTES
 }
@@ -104,12 +105,23 @@ INCLUDE_SECRETS = False
 
 
 def _is_secret_file(path: Path) -> bool:
-    name = Path(path).name.lower()
-    if name in SECRET_FILE_EXACT:
+    """¿El CONTENIDO del archivo es en sí un secreto?
+
+    BUG-3 (probe de hardening): el matching es por NOMBRE BASE, no por nombre
+    completo. `credentials.py`, `id_rsa.py` o `.env.local` son archivos-secreto
+    (lo que importa es la raíz del nombre); `src/credentials_manager.py` NO lo
+    es (es código, el nombre completo no coincide). Se compara el nombre y su
+    stem (nombre sin la última extensión) contra el conjunto exacto, y el
+    nombre completo contra prefijos/sufijos de secreto.
+    """
+    p = Path(path)
+    name = p.name.lower()
+    stem = p.stem.lower()
+    if name in SECRET_FILE_EXACT or stem in SECRET_FILE_EXACT:
         return True
-    if any(name.startswith(p) for p in SECRET_FILE_PREFIXES):
+    if any(name.startswith(prefix) for prefix in SECRET_FILE_PREFIXES):
         return True
-    if any(name.endswith(p) for p in SECRET_FILE_SUFFIXES):
+    if any(name.endswith(suffix) for suffix in SECRET_FILE_SUFFIXES):
         return True
     return False
 
@@ -132,7 +144,13 @@ def iter_source_files(root: Path, *, include_secrets: bool | None = None) -> lis
         kept: list[str] = []
         for d in dirnames:
             dp = os.path.join(dirpath, d)
-            if os.path.islink(dp) or _is_skipped_part(d):
+            if os.path.islink(dp):
+                # ALTA-1: un symlink de directorio jamás se desciende (tenga el
+                # destino dentro o fuera del root). BUG-2: también se cuenta en
+                # `simlinks_omitidos` — la métrica no miente sobre su alcance.
+                STATS["simlinks_omitidos"] += 1
+                continue
+            if _is_skipped_part(d):
                 continue
             kept.append(d)
         dirnames[:] = kept
@@ -148,14 +166,25 @@ def iter_source_files(root: Path, *, include_secrets: bool | None = None) -> lis
                 if not resolved.is_relative_to(root):
                     STATS["simlinks_omitidos"] += 1
                     continue
-            if not fp.is_file() or fp.suffix.lower() not in SOURCE_EXTS:
+            # D11 / BUG-1: el chequeo de archivo-secreto va PRIMERO. Un secreto
+            # se omite por defecto (y se cuenta) SIN depender de su extensión:
+            # `Path('.env').suffix` es '' y `netrc`/`id_rsa` no tienen sufijo,
+            # por lo que el filtro de extensiones jamás debió decidirlos.
+            es_secreto = _is_secret_file(fp)
+            if es_secreto and not include_secrets:
+                STATS["secretos_omitidos"] += 1
+                continue
+            if not fp.is_file():
+                continue
+            # Con `--include-secrets` un archivo-secreto se escanea aunque su
+            # sufijo no esté en SOURCE_EXTS (.env, .env.*, netrc, .npmrc,
+            # .pypirc, id_rsa, credentials, *.pem, ...).
+            if not es_secreto and fp.suffix.lower() not in SOURCE_EXTS:
                 continue
             parts = list(fp.parts)
             if es_symlink:
                 parts += list(fp.resolve().parts)
             if any(_is_skipped_part(part) for part in parts):
-                continue
-            if _is_secret_file(fp) and not include_secrets:
                 continue
             try:
                 if fp.resolve().is_relative_to(_SKIP_SKILL_ROOT):
